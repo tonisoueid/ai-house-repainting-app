@@ -10,8 +10,8 @@ const GEMINI_API_URL =
   import.meta.env.VITE_GEMINI_API_URL ||
   'https://generativelanguage.googleapis.com/v1beta';
 
-// Using Gemini 2.0 Flash Experimental for image generation capabilities
-const MODEL_NAME = 'gemini-2.0-flash-exp';
+// Model name with fallback to Gemini 3 Pro Image Preview
+const MODEL_NAME = import.meta.env.VITE_GEMINI_MODEL_NAME || 'gemini-3-pro-image-preview';
 
 /**
  * Validates that the API key is configured
@@ -116,9 +116,19 @@ export async function repaintHouseImage(
     }
 
     // Look for image data in the response parts
-    const imagePart = candidate.content.parts.find((part) => part.inline_data);
+    // Handle both snake_case (inline_data) and camelCase (inlineData) formats
+    const imagePart = candidate.content.parts.find((part) => part.inline_data || (part as any).inlineData);
     if (imagePart?.inline_data) {
       const outputImage = `data:${imagePart.inline_data.mime_type};base64,${imagePart.inline_data.data}`;
+      return {
+        success: true,
+        outputImage,
+      };
+    } else if ((imagePart as any)?.inlineData) {
+      // Handle camelCase format (used by newer models like gemini-3-pro-image-preview)
+      const inlineData = (imagePart as any).inlineData;
+      const mimeType = inlineData.mimeType || inlineData.mime_type;
+      const outputImage = `data:${mimeType};base64,${inlineData.data}`;
       return {
         success: true,
         outputImage,
@@ -136,7 +146,13 @@ export async function repaintHouseImage(
 
     return {
       success: false,
-      error: 'Unexpected API response format',
+      error: `Unexpected API response format. Response structure: ${JSON.stringify({
+        hasCandidates: !!responseData.candidates,
+        candidateCount: responseData.candidates?.length,
+        hasContent: !!candidate.content,
+        partsCount: candidate.content?.parts?.length,
+        partTypes: candidate.content?.parts?.map(p => Object.keys(p))
+      })}`,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
