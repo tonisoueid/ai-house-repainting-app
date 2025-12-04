@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-neutral-900 antialiased selection:bg-accent selection:text-white;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-glass backdrop-blur-xl border-l border-border;
+  }
+  
+  .swiss-grid {
+    background-image: linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+/* Custom Range Slider Styling */
+input[type=range] {
+  @apply appearance-none bg-transparent cursor-pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  @apply appearance-none h-3 w-3 rounded-full bg-black border-none shadow-sm mt-[-5px] transition-transform duration-200 ease-out;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  @apply scale-125 bg-accent;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  @apply w-full h-[2px] bg-neutral-200 rounded-full;
+}
+
+input[type=range]:focus::-webkit-slider-thumb {
+  @apply ring-2 ring-accent ring-offset-2;
+}
